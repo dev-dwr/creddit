@@ -1,0 +1,6 @@
+npm init -y
+yarn add -D @types/node typescript
+yarn add -D ts-node
+npx tsconfig.json
+yarn add -D nodemon
+yarn add @mikro-orm/cli @mikro-orm/core @mikro-orm/migrations @mikro-orm/postgresql pg
