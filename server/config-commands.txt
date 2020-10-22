@@ -12,3 +12,5 @@ yarn add @mikro-orm/cli @mikro-orm/core @mikro-orm/migrations @mikro-orm/postgre
 yarn add express apollo-server-express graphql type-graphql
 yarn add -D @types/express (installation for typescript)
 yarn add reflect-metadata
+
+yarn add argon2 - encrypting algorithm
