@@ -1,0 +1,21 @@
+req.session.userId = user.id;
+{userId: 1} -> send that to redis(in-memory key value database)
+
+Steps:
+1.
+store in redis:
+sess:qsafadg -> {userId: 1}
+
+2.
+express-session will set a cookie on my browser asjaifnasfonagn(assigned version of the key is sent to the browser)
+
+3.
+when user makes a request
+this value asjaifnasfonagn -> will be sent to the server
+
+4.
+on the server asjaifnasfonagn would be unsigned(decrypt) into sess:qsafadg
+
+5.
+make a request to redis
+sess:qsafadg -> {userId: 1}

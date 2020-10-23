@@ -28,16 +28,27 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+	@Query(() => User, {nullable: true})
+	async checkLoginUsers(@Ctx() {req, em}:MyContext): Promise<User | null>{
+		if(!req.session.userId){
+			return null; //you are not login
+		}
+		const user = await em.findOne(User, {id: req.session.userId})
+		return user;
+	}
+
+
 	@Query(() => [ User ])
 	async findAllUsers(@Ctx() { em }: MyContext): Promise<User[]> {
 		const user = await em.find(User, {});
 		return user;
 	}
 
-	@Mutation(() => UserResponse)
-	async register(@Arg('options') options: UsernamePasswordInput, @Ctx() { em }: MyContext): Promise<UserResponse> {
+	@Mutation(() => UserResponse) //getting access to Fields inside UserResponse object schema
+	async register(@Arg('options') options: UsernamePasswordInput, @Ctx() { em, req }: MyContext): Promise<UserResponse> {
 		if (options.username.length <= 2) {
 			return {
+				//we can do this like that, due to specified response type in Mutation annotation
 				errors: [
 					{
 						field: 'username',
@@ -73,11 +84,15 @@ export class UserResolver {
 				};
 			}
 		}
+		//store user id session
+		//this will set a cookie on the user
+		//keep them logged in
+		req.session.userId = user.id;
 		return { user };
 	}
 
 	@Mutation(() => UserResponse)
-	async login(@Arg('options') options: UsernamePasswordInput, @Ctx() { em }: MyContext): Promise<UserResponse> {
+	async login(@Arg('options') options: UsernamePasswordInput, @Ctx() { em, req }: MyContext): Promise<UserResponse> {
 		const user = await em.findOne(User, { username: options.username });
 		if (!user) {
 			return {
@@ -101,6 +116,12 @@ export class UserResolver {
 				]
 			};
 		}
+
+		//storing user id in Redis (default type of session has '?' means that it could be undefined)
+		// store user id session
+		// this will set a cookie on the user
+		// keep them logged in
+		req.session.userId = user.id;
 		return {
 			user
 		};

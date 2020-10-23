@@ -14,3 +14,8 @@ yarn add -D @types/express (installation for typescript)
 yarn add reflect-metadata
 
 yarn add argon2 - encrypting algorithm
+
+# Work with Redis(in memory database) (stores data about users on our database[Redis(very fast) in memory database])
+yarn add express-session redis connect-redis 
+# Types necessary for typescript
+yarn add -D @types/redis @types/express-session @types/connect-redis
