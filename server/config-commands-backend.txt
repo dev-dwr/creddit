@@ -19,3 +19,6 @@ yarn add argon2 - encrypting algorithm
 yarn add express-session redis connect-redis 
 # Types necessary for typescript
 yarn add -D @types/redis @types/express-session @types/connect-redis
+
+yarn add cors
+yarn add -D @types/cors

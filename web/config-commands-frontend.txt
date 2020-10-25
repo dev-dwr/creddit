@@ -1,7 +1,11 @@
-in next js in page folder the name of the file will be the route  
-
+ 
 yarn create next-app --example with-chakra-ui [name]
 
 yarn add -dev typescript @types/node
 
 yarn add formik
+
+
+yarn add urql graphql
+
+nvm use node - allows to switch node versions 
