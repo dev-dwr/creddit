@@ -1,4 +1,11 @@
- 
+to understand: 
+optional chaining(typescript feature) - which allows us access properties that are deeply nested 
+if we have for example response.data which may be possibly undefined  
+response.data.register.errors will throw error if data is undefined
+response.data?.register.errors will be accepted, it will return undefined if there is no data
+
+
+
 yarn create next-app --example with-chakra-ui [name]
 
 yarn add -dev typescript @types/node

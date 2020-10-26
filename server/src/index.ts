@@ -11,6 +11,7 @@ import redis from 'redis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
 import cors from 'cors'
+import { MyContext } from './types';
 
 const main = async () => {
 	const orm = await MikroORM.init(microConfig);
@@ -52,7 +53,7 @@ const main = async () => {
 		}),
 		//req will access session
 		//context is an obj which is accessible by all resolvers
-		context: ({ req, res }) => { em: orm.em, req, res }
+		context: ({ req, res }): MyContext => <MyContext>{ em: orm.em, req, res }
 	});
 
 	apolloServer.applyMiddleware({ app, cors: false});

@@ -1,0 +1,6 @@
+query checkLoginUsers {
+	checkLoginUsers {
+		username
+		id
+	}
+}
