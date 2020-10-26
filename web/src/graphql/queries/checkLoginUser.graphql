@@ -1,6 +1,5 @@
 query checkLoginUsers {
 	checkLoginUsers {
-		username
-		id
+		...UserParameters
 	}
 }
