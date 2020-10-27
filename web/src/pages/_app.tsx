@@ -1,8 +1,7 @@
 import { ThemeProvider, CSSReset } from '@chakra-ui/core';
 import { Provider, createClient, dedupExchange, fetchExchange } from 'urql';
-import { cacheExchange, Cache, QueryInput, query } from '@urql/exchange-graphcache';
-import { Query } from '../generated/graphql';
-import { RegisterMutation, LoginMutation, CheckLoginUsersDocument, CheckLoginUsersQuery } from '../generated/graphql';
+import { cacheExchange, Cache, QueryInput } from '@urql/exchange-graphcache';
+import { RegisterMutation, LoginMutation, CheckLoginUsersDocument, CheckLoginUsersQuery, LogoutMutation } from '../generated/graphql';
 
 //Properly casting the types
 function betterUpdateQuery<Result, Query>(
@@ -20,8 +19,18 @@ const client = createClient({
 	exchanges: [
 		dedupExchange,
 		cacheExchange({
-			updates: { // when login/register mutation will run, it will update the cache
+			updates: { // when login/register/logout mutation will run, it will update the cache
 				Mutation: {
+					logout:(_result, args, cache, info) => {
+						betterUpdateQuery<LogoutMutation, CheckLoginUsersQuery>(
+							cache, 
+							{query: CheckLoginUsersDocument},
+							_result,
+							() => {
+								return {checkLoginUsers: null}
+							}
+						)
+					},
 					login: (_result, args, cache, info) => {
 						betterUpdateQuery<LoginMutation, CheckLoginUsersQuery>( //specifically we are updating CheckLoginUsersQuery
 							cache,

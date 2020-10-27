@@ -2,6 +2,7 @@ import { MyContext } from 'src/types';
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Resolver, Query } from 'type-graphql';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
+import { COOKIE_NAME } from '../constants';
 
 //using as a arguments
 @InputType()
@@ -28,15 +29,14 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
-	@Query(() => User, {nullable: true})
-	async checkLoginUsers(@Ctx() {req, em}:MyContext): Promise<User | null>{
-		if(!req.session.userId){
+	@Query(() => User, { nullable: true })
+	async checkLoginUsers(@Ctx() { req, em }: MyContext): Promise<User | null> {
+		if (!req.session.userId) {
 			return null; //you are not login
 		}
-		const user = await em.findOne(User, {id: req.session.userId})
+		const user = await em.findOne(User, { id: req.session.userId });
 		return user;
 	}
-
 
 	@Query(() => [ User ])
 	async findAllUsers(@Ctx() { em }: MyContext): Promise<User[]> {
@@ -45,7 +45,10 @@ export class UserResolver {
 	}
 
 	@Mutation(() => UserResponse) //getting access to Fields inside UserResponse object schema
-	async register(@Arg('options') options: UsernamePasswordInput, @Ctx() { em, req }: MyContext): Promise<UserResponse> {
+	async register(
+		@Arg('options') options: UsernamePasswordInput,
+		@Ctx() { em, req }: MyContext
+	): Promise<UserResponse> {
 		if (options.username.length <= 2) {
 			return {
 				//we can do this like that, due to specified response type in Mutation annotation
@@ -125,5 +128,19 @@ export class UserResolver {
 		return {
 			user
 		};
+	}
+	@Mutation(() => Boolean)
+	logout(@Ctx() { req, res }: MyContext) {
+		
+		return new Promise((resolve) =>
+			req.session.destroy((err) => {
+				res.clearCookie(COOKIE_NAME);
+				if (err) {
+					console.log(err);
+					resolve(false);
+				}
+				resolve(true);
+			})
+		);
 	}
 }
