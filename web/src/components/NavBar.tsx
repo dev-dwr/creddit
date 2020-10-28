@@ -1,17 +1,21 @@
-import { Box, Button, Flex, Link, Text } from '@chakra-ui/core';
+import { Box, Button, Flex, Link } from '@chakra-ui/core';
 import React from 'react';
 import NextLink from 'next/link'
 import { useCheckLoginUsersQuery, useLogoutMutation } from '../generated/graphql';
+import { isServer } from '../utils/isServerSide';
 
 interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
-    const [{fetching: LogoutFetchingType}, logout] = useLogoutMutation();
-    const [{data, fetching}] = useCheckLoginUsersQuery();
+    const [{fetching: logoutFetchingType}, logout] = useLogoutMutation();
+    const [{data, fetching}] = useCheckLoginUsersQuery({
+        pause: isServer()
+    }); //{pause: isServer()}
 
     let body = null;
+
     if(fetching){ // data is loading
-        body = null;
+        //body = null;
     }else if(!data?.checkLoginUsers){ //user not logged in
         body = (
             <>
@@ -27,13 +31,10 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
     }else{ // user is logged in
         body = (
             <Flex>
-                <Text mt={1} fontSize="xl" color ="white" fontWeight="semibold" lineHeight="short" >
-                    {data.checkLoginUsers.username}
-                </Text>
-
+               <Box color = "white" mt ={2}>{data.checkLoginUsers.username}</Box>
                 <Button ml={5} 
                 onClick = {()=> logout()}
-                isLoading = {LogoutFetchingType} 
+                isLoading = {logoutFetchingType} 
                 variantColor="green">Logout</Button>
             </Flex>
         )
@@ -41,9 +42,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
     
 	return (
 		<Flex bg="tomato" p={4}>
-			<Box ml = {"auto"}>
-                {body}
-			</Box>
+			<Box ml = {"auto"}>{body}</Box>
 		</Flex>
 	);
 };

@@ -1,0 +1,9 @@
+me -> browse http://localhost:3000
+-> nextjs server
+-> request graphql server localhost:4000
+-> building the HTML
+-> sending back to your browser
+
+
+Server Side Rendering(SSR) - it will load data on server side and then it will show the page so we would not get 
+loading indicator (at least if we do this successfully)

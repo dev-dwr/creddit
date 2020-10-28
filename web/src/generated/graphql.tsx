@@ -158,6 +158,17 @@ export type CheckLoginUsersQuery = (
   )> }
 );
 
+export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PostsQuery = (
+  { __typename?: 'Query' }
+  & { posts: Array<(
+    { __typename?: 'Post' }
+    & Pick<Post, 'title' | 'id' | 'createdAt' | 'updatedAt'>
+  )> }
+);
+
 export const UserParametersFragmentDoc = gql`
     fragment UserParameters on User {
   id
@@ -217,4 +228,18 @@ export const CheckLoginUsersDocument = gql`
 
 export function useCheckLoginUsersQuery(options: Omit<Urql.UseQueryArgs<CheckLoginUsersQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<CheckLoginUsersQuery>({ query: CheckLoginUsersDocument, ...options });
+};
+export const PostsDocument = gql`
+    query Posts {
+  posts {
+    title
+    id
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<PostsQuery>({ query: PostsDocument, ...options });
 };

@@ -24,3 +24,6 @@ yarn add -D @graphql-codegen/typescript-urql
 
 graphql cache
 yarn add @urql/exchange-graphcache
+
+Next.js URQL Server Side Rendering
+yarn add next-urql react-is urql

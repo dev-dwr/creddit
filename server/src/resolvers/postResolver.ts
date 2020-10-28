@@ -2,9 +2,8 @@ import { Post } from '../entities/Post';
 import { MyContext } from '../types';
 import { Resolver, Query, Ctx, Arg, Mutation } from 'type-graphql';
 
-//CRUD OPERATIONS
-//query for searching data
-//mutation is for creating updating data
+
+
 @Resolver()
 export class PostResolver {
 	@Query(() => [ Post ])
