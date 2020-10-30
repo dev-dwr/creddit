@@ -1,11 +1,5 @@
-mutation Register($options: UsernamePasswordInput!){
-    register(options:$options){
-      user{
-       ...UserParameters
-      }
-      errors{
-        field
-        message
-      }
-    }
-  }
+mutation Register($options: UsernamePasswordInput!) {
+	register(options: $options) {
+		...UserResponseParameters
+	}
+}

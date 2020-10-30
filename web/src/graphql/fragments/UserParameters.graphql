@@ -1,4 +1,4 @@
 fragment UserParameters on User{
-    id,
-    username,
+    id
+    username
 }

@@ -1,16 +1,17 @@
-import { MyContext } from 'src/types';
+import { MyContext } from '../types';
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Resolver, Query } from 'type-graphql';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
-import { COOKIE_NAME } from '../constants';
-import {validateRegister} from '../utils/validateRegister';
+import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from '../constants';
+import { validateRegister } from '../utils/validateRegister';
+import { sendEmail } from '../utils/sendEmail';
+import { v4 } from 'uuid';
 
-//using as a arguments
 @InputType()
 class UsernamePasswordInput {
 	@Field() username: string;
 	@Field() password: string;
-	@Field() email:string;
+	@Field() email: string;
 }
 
 @ObjectType()
@@ -31,15 +32,82 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
-	@Mutation(() => Boolean)
-	async forgotPassword(
-		@Arg('email') email:string,
-		@Ctx() {em}: MyContext
-	){
-	//	const user = await em.findOne(User, {email})
-		return true;
+	@Mutation(() => UserResponse)
+	async changePassword(
+		@Arg('token') token: string,
+		@Arg('newPassword') newPassword: string,
+		@Ctx() { redis, em, req }: MyContext
+	): Promise<UserResponse> {
+		if (newPassword.length <= 2) {
+			return {
+				errors: [
+					{
+						field: 'newPassword', //name of our field in frontend
+						message: 'length must be greater than 2'
+					}
+				]
+			};
+		}
+		const key = FORGET_PASSWORD_PREFIX + token
+		const userId = await redis.get(key); 
+		if (!userId) {
+			return{
+				errors:[
+					{
+						field: "token",
+						message:"token expired"
+					}
+				]
+			}
+		}
+
+		const user = await em.findOne(User, {id: parseInt(userId)});
+
+		if(!user){
+			return{
+				errors:[
+					{
+						field: "token",
+						message:"user no longer exists"
+					}
+				]
+			}
+		}	
+		const checkPasswordSimilarity = await argon2.verify(user.password, newPassword)
+		if(checkPasswordSimilarity){
+			return{
+				errors:[
+					{
+						field: "newPassword",
+						message:"this is your current password, change it"
+					}
+				]
+			}
+		}
+
+		user.password = await argon2.hash(newPassword);
+		em.persistAndFlush(user);
+
+		await redis.del(key) //removes token so it cannot be used twice
+		//login user after change password, //setting up the session
+		req.session.userId = user.id;
+
+		return {user};
 	}
 
+	@Mutation(() => Boolean)
+	async forgotPassword(@Arg('email') email: string, @Ctx() { em, redis }: MyContext) {
+		const user = await em.findOne(User, { email });
+		if (!user) {
+			//the email is not in db
+			return true;
+		}
+		const token = v4();
+		redis.set(FORGET_PASSWORD_PREFIX + token, user.id, 'ex', 1000 * 60 * 60 * 24 * 3); // 3 days
+		console.log(token);
+		await sendEmail(email, `<a href="http://localhost:3000/change-password/${token}">reset password</a>`);
+		return true;
+	}
 
 	@Query(() => User, { nullable: true })
 	async checkLoginUsers(@Ctx() { req, em }: MyContext): Promise<User | null> {
@@ -55,17 +123,15 @@ export class UserResolver {
 		@Arg('options') options: UsernamePasswordInput,
 		@Ctx() { em, req }: MyContext
 	): Promise<UserResponse> {
-		
 		const errors = validateRegister(options);
 
-		if(errors){
-			return {errors}
+		if (errors) {
+			return { errors };
 		}
 
-
 		const hashedPassword = await argon2.hash(options.username);
-		const user = em.create(User, { username: options.username, password: hashedPassword, email: options.email});
-		console.log(user)
+		const user = em.create(User, { username: options.username, password: hashedPassword, email: options.email });
+		console.log(user);
 		try {
 			await em.persistAndFlush(user);
 		} catch (err) {
@@ -90,10 +156,13 @@ export class UserResolver {
 	@Mutation(() => UserResponse)
 	async login(
 		@Arg('usernameOrEmail') usernameOrEmail: string,
-		@Arg("password") password: string,
-	@Ctx() { em, req }: MyContext): Promise<UserResponse> {
-		const user = await em.findOne(User, 
-			usernameOrEmail.includes("@") ? {email: usernameOrEmail} : {username:usernameOrEmail});
+		@Arg('password') password: string,
+		@Ctx() { em, req }: MyContext
+	): Promise<UserResponse> {
+		const user = await em.findOne(
+			User,
+			usernameOrEmail.includes('@') ? { email: usernameOrEmail } : { username: usernameOrEmail }
+		);
 		if (!user) {
 			return {
 				errors: [
@@ -128,7 +197,6 @@ export class UserResolver {
 	}
 	@Mutation(() => Boolean)
 	logout(@Ctx() { req, res }: MyContext) {
-		
 		return new Promise((resolve) =>
 			req.session.destroy((err) => {
 				res.clearCookie(COOKIE_NAME);

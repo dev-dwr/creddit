@@ -25,3 +25,8 @@ yarn add -D @types/cors
 
 yarn add nodemailer
 yarn add -D @types/nodemailer
+
+yarn add uuid ioredis
+yarn add @types/uuid
+yarn add @types/ioredis
+yarn remove redis
