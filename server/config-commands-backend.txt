@@ -30,3 +30,7 @@ yarn add uuid ioredis
 yarn add @types/uuid
 yarn add @types/ioredis
 yarn remove redis
+
+
+##adding typeorm
+yarn add typeorm

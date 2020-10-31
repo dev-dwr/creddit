@@ -1,7 +1,5 @@
 import 'reflect-metadata';
-import microConfig from './mikro-orm.config';
 import express from 'express';
-import { MikroORM } from '@mikro-orm/core';
 import { COOKIE_NAME, __prod__ } from './constants';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
@@ -12,13 +10,24 @@ import session from 'express-session';
 import connectRedis from 'connect-redis';
 import cors from 'cors'
 import { MyContext } from './types';
-import { sendEmail } from './utils/sendEmail';
+import {createConnection} from "typeorm"
+import { Post } from './entities/Post';
 import { User } from './entities/User';
 
 const main = async () => {
-	const orm = await MikroORM.init(microConfig);
+	const connection = await createConnection({
+		type:'postgres',
+		database: 'creddit2',
+		username:"postgres",
+		password: "admin",
+		logging: true, //sql sentences will showup in terminal
+		synchronize: true, //create  tables without running migrations 
+		entities: [Post, User]
+	});
+
+	
 	//await orm.em.nativeDelete(User, {}) delete user from db
-	await orm.getMigrator().up(); //runs migrations
+	//await orm.getMigrator().up(); //runs migrations
 
 	const app = express();
 
@@ -56,7 +65,7 @@ const main = async () => {
 		}),
 		//req will access session
 		//context is an obj which is accessible by all resolvers
-		context: ({ req, res }): MyContext => <MyContext>{ em: orm.em, req, res, redis }
+		context: ({ req, res }): MyContext => <MyContext>{req, res, redis }
 	});
 
 	apolloServer.applyMiddleware({ app, cors: false});

@@ -6,6 +6,7 @@ import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from '../constants';
 import { validateRegister } from '../utils/validateRegister';
 import { sendEmail } from '../utils/sendEmail';
 import { v4 } from 'uuid';
+import { getConnection } from 'typeorm';
 
 @InputType()
 class UsernamePasswordInput {
@@ -36,7 +37,7 @@ export class UserResolver {
 	async changePassword(
 		@Arg('token') token: string,
 		@Arg('newPassword') newPassword: string,
-		@Ctx() { redis, em, req }: MyContext
+		@Ctx() { redis, req }: MyContext
 	): Promise<UserResponse> {
 		if (newPassword.length <= 2) {
 			return {
@@ -48,56 +49,56 @@ export class UserResolver {
 				]
 			};
 		}
-		const key = FORGET_PASSWORD_PREFIX + token
-		const userId = await redis.get(key); 
+		const key = FORGET_PASSWORD_PREFIX + token;
+		const userId = await redis.get(key);
 		if (!userId) {
-			return{
-				errors:[
+			return {
+				errors: [
 					{
-						field: "token",
-						message:"token expired"
+						field: 'token',
+						message: 'token expired'
 					}
 				]
-			}
+			};
 		}
 
-		const user = await em.findOne(User, {id: parseInt(userId)});
+		const id = parseInt(userId);
+		const user = await User.findOne(id);
 
-		if(!user){
-			return{
-				errors:[
+		if (!user) {
+			return {
+				errors: [
 					{
-						field: "token",
-						message:"user no longer exists"
+						field: 'token',
+						message: 'user no longer exists'
 					}
 				]
-			}
-		}	
-		const checkPasswordSimilarity = await argon2.verify(user.password, newPassword)
-		if(checkPasswordSimilarity){
-			return{
-				errors:[
+			};
+		}
+		const checkPasswordSimilarity = await argon2.verify(user.password, newPassword);
+		if (checkPasswordSimilarity) {
+			return {
+				errors: [
 					{
-						field: "newPassword",
-						message:"this is your current password, change it"
+						field: 'newPassword',
+						message: 'this is your current password, change it'
 					}
 				]
-			}
+			};
 		}
 
-		user.password = await argon2.hash(newPassword);
-		em.persistAndFlush(user);
+		await User.update({ id: id }, { password: await argon2.hash(newPassword) }); //updated based on id
 
-		await redis.del(key) //removes token so it cannot be used twice
+		await redis.del(key); //removes token so it cannot be used twice
 		//login user after change password, //setting up the session
 		req.session.userId = user.id;
 
-		return {user};
+		return { user };
 	}
 
 	@Mutation(() => Boolean)
-	async forgotPassword(@Arg('email') email: string, @Ctx() { em, redis }: MyContext) {
-		const user = await em.findOne(User, { email });
+	async forgotPassword(@Arg('email') email: string, @Ctx() { redis }: MyContext) {
+		const user = await User.findOne({ where: { email } }); //because email is not primary key
 		if (!user) {
 			//the email is not in db
 			return true;
@@ -110,30 +111,38 @@ export class UserResolver {
 	}
 
 	@Query(() => User, { nullable: true })
-	async checkLoginUsers(@Ctx() { req, em }: MyContext): Promise<User | null> {
+	checkLoginUsers(@Ctx() { req }: MyContext) {
 		if (!req.session.userId) {
 			return null; //you are not login
 		}
-		const user = await em.findOne(User, { id: req.session.userId });
-		return user;
+		return User.findOne({ where: { id: req.session.userId } });
 	}
 
 	@Mutation(() => UserResponse) //getting access to Fields inside UserResponse object schema
-	async register(
-		@Arg('options') options: UsernamePasswordInput,
-		@Ctx() { em, req }: MyContext
-	): Promise<UserResponse> {
+	async register(@Arg('options') options: UsernamePasswordInput, @Ctx() { req }: MyContext): Promise<UserResponse> {
 		const errors = validateRegister(options);
-
 		if (errors) {
 			return { errors };
 		}
 
-		const hashedPassword = await argon2.hash(options.username);
-		const user = em.create(User, { username: options.username, password: hashedPassword, email: options.email });
-		console.log(user);
+		const hashedPassword = await argon2.hash(options.password);
+		// const user = await User.create({username:options.username,
+		// 	password: hashedPassword,
+		// 	email:options.email})
+		let user;
 		try {
-			await em.persistAndFlush(user);
+			//await user.save()
+			const result = await getConnection() 
+			.createQueryBuilder()
+			.insert()
+			.into(User)
+			.values({
+				username:options.username,
+				password: hashedPassword,
+				email:options.email,
+			}).returning("*")
+			.execute();
+			user = result.raw[0]
 		} catch (err) {
 			if (err.code === '23505' || err.detail.includes('already exists')) {
 				return {
@@ -157,12 +166,14 @@ export class UserResolver {
 	async login(
 		@Arg('usernameOrEmail') usernameOrEmail: string,
 		@Arg('password') password: string,
-		@Ctx() { em, req }: MyContext
+		@Ctx() { req }: MyContext
 	): Promise<UserResponse> {
-		const user = await em.findOne(
-			User,
-			usernameOrEmail.includes('@') ? { email: usernameOrEmail } : { username: usernameOrEmail }
+		const user = await User.findOne(
+			usernameOrEmail.includes('@')
+				? { where: { email: usernameOrEmail } }
+				: { where: { username: usernameOrEmail } }
 		);
+
 		if (!user) {
 			return {
 				errors: [
