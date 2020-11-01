@@ -25,7 +25,6 @@ const main = async () => {
 		entities: [Post, User]
 	});
 
-	
 	//await orm.em.nativeDelete(User, {}) delete user from db
 	//await orm.getMigrator().up(); //runs migrations
 

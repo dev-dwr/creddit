@@ -1,35 +1,16 @@
-import { MyContext } from '../types';
-import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Resolver, Query } from 'type-graphql';
-import { User } from '../entities/User';
 import argon2 from 'argon2';
-import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from '../constants';
-import { validateRegister } from '../utils/validateRegister';
-import { sendEmail } from '../utils/sendEmail';
-import { v4 } from 'uuid';
+import { Arg, Ctx, Mutation, Query, Resolver } from 'type-graphql';
 import { getConnection } from 'typeorm';
+import { v4 } from 'uuid';
+import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from '../constants';
+import { User } from '../entities/User';
+import { MyContext } from '../types';
+import { sendEmail } from '../utils/sendEmail';
+import { throwAnError } from '../utils/throwAnError';
+import { validateRegister } from '../utils/validateRegister';
+import UsernamePasswordInput from './inputTypes/UsernamePasswordInput';
+import UserResponse from './objectTypes/UserResponseTypes';
 
-@InputType()
-class UsernamePasswordInput {
-	@Field() username: string;
-	@Field() password: string;
-	@Field() email: string;
-}
-
-@ObjectType()
-class FieldError {
-	@Field() field: string;
-	@Field() message: string;
-}
-
-//we can return from our mutations
-@ObjectType()
-class UserResponse {
-	@Field(() => [ FieldError ], { nullable: true })
-	errors?: FieldError[];
-
-	@Field(() => User, { nullable: true })
-	user?: User;
-}
 
 @Resolver()
 export class UserResolver {
@@ -40,51 +21,23 @@ export class UserResolver {
 		@Ctx() { redis, req }: MyContext
 	): Promise<UserResponse> {
 		if (newPassword.length <= 2) {
-			return {
-				errors: [
-					{
-						field: 'newPassword', //name of our field in frontend
-						message: 'length must be greater than 2'
-					}
-				]
-			};
+			return throwAnError('newPassword', 'length must be greater than 2');
 		}
 		const key = FORGET_PASSWORD_PREFIX + token;
 		const userId = await redis.get(key);
 		if (!userId) {
-			return {
-				errors: [
-					{
-						field: 'token',
-						message: 'token expired'
-					}
-				]
-			};
+			return throwAnError('token', 'token expired');
 		}
 
 		const id = parseInt(userId);
 		const user = await User.findOne(id);
 
 		if (!user) {
-			return {
-				errors: [
-					{
-						field: 'token',
-						message: 'user no longer exists'
-					}
-				]
-			};
+			return throwAnError('token', 'user no longer exists');
 		}
 		const checkPasswordSimilarity = await argon2.verify(user.password, newPassword);
 		if (checkPasswordSimilarity) {
-			return {
-				errors: [
-					{
-						field: 'newPassword',
-						message: 'this is your current password, change it'
-					}
-				]
-			};
+			return throwAnError('newPassword', 'this is your current password, change it');
 		}
 
 		await User.update({ id: id }, { password: await argon2.hash(newPassword) }); //updated based on id
@@ -132,27 +85,21 @@ export class UserResolver {
 		let user;
 		try {
 			//await user.save()
-			const result = await getConnection() 
-			.createQueryBuilder()
-			.insert()
-			.into(User)
-			.values({
-				username:options.username,
-				password: hashedPassword,
-				email:options.email,
-			}).returning("*")
-			.execute();
-			user = result.raw[0]
+			const result = await getConnection()
+				.createQueryBuilder()
+				.insert()
+				.into(User)
+				.values({
+					username: options.username,
+					password: hashedPassword,
+					email: options.email
+				})
+				.returning('*')
+				.execute();
+			user = result.raw[0];
 		} catch (err) {
 			if (err.code === '23505' || err.detail.includes('already exists')) {
-				return {
-					errors: [
-						{
-							field: 'username',
-							message: 'username already taken'
-						}
-					]
-				};
+				return throwAnError('username', 'username already taken');
 			}
 		}
 		//store user id session
@@ -175,26 +122,12 @@ export class UserResolver {
 		);
 
 		if (!user) {
-			return {
-				errors: [
-					{
-						field: 'usernameOrEmail',
-						message: 'username is not exists'
-					}
-				]
-			};
+			return throwAnError('usernameOrEmail', 'username is not exists');
 		}
 
 		const validPassword = await argon2.verify(user.password, password);
 		if (!validPassword) {
-			return {
-				errors: [
-					{
-						field: 'password',
-						message: 'incorrect password'
-					}
-				]
-			};
+			return throwAnError('password', 'incorrect password');
 		}
 
 		//storing user id in Redis (default type of session has '?' means that it could be undefined)
