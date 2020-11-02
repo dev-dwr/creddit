@@ -6,10 +6,10 @@ import { useCheckLoginUsersQuery } from "../src/generated/graphql";
 export const useIsAuth = () =>{
     const [{data, fetching}]= useCheckLoginUsersQuery();
     const router = useRouter();
-    
+    console.log(router)
     useEffect(() => {
         if(!fetching && !data?.checkLoginUsers){
-            router.replace("login")
+            router.replace("/login?next="+ router.pathname)
         }
     }, [fetching, data, router]);
 }

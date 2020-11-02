@@ -11,11 +11,10 @@ import { useState } from 'react';
 import { createUrqlClient } from '../../utils/createUrqlClient';
 import { withUrqlClient } from 'next-urql';
 import NextLink from 'next/link'
-interface ChangePasswordProps{
-    token: string
-}
 
-const ChangePassword: NextPage<ChangePasswordProps> = ({token}) => {
+
+
+const ChangePassword: NextPage = () => {
     const [{}, changePassword] = useChangePasswordMutation();
     const router = useRouter();
     const [tokenErr, setTokenErr] = useState("");
@@ -30,7 +29,7 @@ const ChangePassword: NextPage<ChangePasswordProps> = ({token}) => {
 				onSubmit={async (values, {setErrors}) => {
                     const response = await changePassword({
                         newPassword: values.newPassword,
-                        token: token
+                        token: typeof router.query.token === 'string' ? router.query.token : ''
                     });
                     if(response.data?.changePassword.errors){
                         const errorMap = toErrorMap(response.data.changePassword.errors)
@@ -76,10 +75,10 @@ const ChangePassword: NextPage<ChangePasswordProps> = ({token}) => {
 }
 
 //allows us to get any query parameter and pass it to Function Component
-ChangePassword.getInitialProps = ({query}) => {
-    return{
-        token: query.token as string //casting this parameter
-    }
-}
+// ChangePassword.getInitialProps = ({query}) => {
+//     return{
+//         token: query.token as string //casting this parameter
+//     }
+// }
 
 export default withUrqlClient(createUrqlClient) (ChangePassword);
