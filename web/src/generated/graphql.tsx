@@ -20,6 +20,12 @@ export type Query = {
 };
 
 
+export type QueryPostsArgs = {
+  cursor?: Maybe<Scalars['String']>;
+  limit: Scalars['Int'];
+};
+
+
 export type QueryPostArgs = {
   id: Scalars['Float'];
 };
@@ -221,7 +227,10 @@ export type CheckLoginUsersQuery = (
   )> }
 );
 
-export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
+export type PostsQueryVariables = Exact<{
+  limit: Scalars['Int'];
+  cursor?: Maybe<Scalars['String']>;
+}>;
 
 
 export type PostsQuery = (
@@ -334,8 +343,8 @@ export function useCheckLoginUsersQuery(options: Omit<Urql.UseQueryArgs<CheckLog
   return Urql.useQuery<CheckLoginUsersQuery>({ query: CheckLoginUsersDocument, ...options });
 };
 export const PostsDocument = gql`
-    query Posts {
-  posts {
+    query Posts($limit: Int!, $cursor: String) {
+  posts(limit: $limit, cursor: $cursor) {
     title
     id
     createdAt

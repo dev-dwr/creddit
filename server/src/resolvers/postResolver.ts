@@ -1,8 +1,10 @@
 import { Post } from '../entities/Post';
-import { Resolver, Query, Arg, Mutation, InputType, Field, Ctx, UseMiddleware } from 'type-graphql';
+import { Resolver, Query, Arg, Mutation, InputType, Field, Ctx, UseMiddleware, Int } from 'type-graphql';
 import { MyContext } from 'src/types';
 import { isAuth } from '../middleware/isAuth';
 import { type } from 'os';
+import { getConnection } from 'typeorm';
+import { User } from 'src/entities/User';
 
 @InputType()
 class PostInput{
@@ -17,8 +19,23 @@ class PostInput{
 @Resolver()
 export class PostResolver {
 	@Query(() => [ Post ])
-	posts(): Promise<Post[]> {
-		return Post.find();
+	posts(
+		@Arg("limit", () => Int) limit:number,
+		@Arg("cursor", () => String, {nullable:true}) cursor: string | null
+	): Promise<Post[]> {
+		//cursor is giving us position which will be our reference
+		//Math.min() compare 50 and limit and returns the smallest
+		const realLimit = Math.min(50, limit)
+		const queryBuilder = getConnection()
+		.getRepository(Post)
+		.createQueryBuilder("p")
+		.orderBy('"createdAt"', "DESC")
+		.take(realLimit)
+		if(cursor){
+			//paging through items with createdAt as a reference
+			queryBuilder.where('"createdAt" < :cursor', {cursor: new Date(parseInt(cursor))}) 
+		}
+		return queryBuilder.getMany();
 	}
 
 	@Query(() => Post, { nullable: true })
