@@ -34,3 +34,8 @@ yarn remove redis
 
 ##adding typeorm
 yarn add typeorm
+
+
+##Mock data
+mockaroo.com - mock data generator
+npx typeorm migration:create -n FakePost -d src/migrations - create migrations in typeorm

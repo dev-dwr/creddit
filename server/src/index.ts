@@ -13,6 +13,7 @@ import { MyContext } from './types';
 import {createConnection} from "typeorm"
 import { Post } from './entities/Post';
 import { User } from './entities/User';
+import path from 'path'
 
 const main = async () => {
 	const connection = await createConnection({
@@ -20,10 +21,12 @@ const main = async () => {
 		database: 'creddit2',
 		username:"postgres",
 		password: "admin",
+		migrations:[path.join(__dirname, "./migrations/*")], //current path + migration folder with everything in it
 		logging: true, //sql sentences will showup in terminal
 		synchronize: true, //create  tables without running migrations 
 		entities: [Post, User]
 	});
+	await connection.runMigrations()
 
 	//await orm.em.nativeDelete(User, {}) delete user from db
 	//await orm.getMigrator().up(); //runs migrations
