@@ -39,3 +39,6 @@ yarn add typeorm
 ##Mock data
 mockaroo.com - mock data generator
 npx typeorm migration:create -n FakePost -d src/migrations - create migrations in typeorm
+
+if we want to declare data in postgresql and we have capital letter in the name of it 
+we need to specify it by for example making -> '"createdAt"'(in our code editor) or "createdAt" in mockaroo.com
