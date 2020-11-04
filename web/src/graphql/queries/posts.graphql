@@ -5,6 +5,5 @@ query Posts($limit:Int!, $cursor:String) {
 		createdAt
 		updatedAt
 		textSnippet
-		authorId
 	}
 }

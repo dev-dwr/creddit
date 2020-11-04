@@ -27,10 +27,9 @@ const main = async () => {
 		entities: [Post, User]
 	});
 	await connection.runMigrations()
-
-	//await orm.em.nativeDelete(User, {}) delete user from db
-	//await orm.getMigrator().up(); //runs migrations
-
+	//await Post.delete({})
+	
+	
 	const app = express();
 
 	const RedisStore = connectRedis(session);
