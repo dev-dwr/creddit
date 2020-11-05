@@ -33,18 +33,29 @@ export const cursorPagination = (): Resolver => {
 	  }
 
 	  const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`
-	  const isInTheCache = cache.resolveFieldByKey(entityKey, fieldKey)
+	  const isInTheCache = cache.resolve(cache.resolveFieldByKey(entityKey, fieldKey) as string, "posts")
 	  //as a true urql will think that we do not gave all the data so it will fetch remain data from the server
 	  //if its not in the case we will return partial
 	  info.partial = !isInTheCache 
-	 
+	  
+	  let hasMore = true; 
 	  //combining data 
 	  const result: string[] = []
 	  fieldInfos.forEach(fi =>{ //looping in all elements we have in the list
-		const data = cache.resolveFieldByKey(entityKey, fi.fieldKey) as string[]; //casting the value
+		const key = cache.resolveFieldByKey(entityKey, fi.fieldKey) as string;
+		
+		const _hasMore = cache.resolve(key, "hasMore")
+		if(!_hasMore){
+			hasMore = _hasMore as boolean;
+		}
+		const data = cache.resolve(key, "posts") as string[] //dealing with nested objects
 		result.push(...data) //combining two arrays
 	})
-	  return result
+	  return {
+		  __typename: 'PaginatedPosts',
+		  posts:result,
+		  hasMore: hasMore
+	  }
 	}
 	
 	//   const visited = new Set();
@@ -111,6 +122,9 @@ export const createUrqlClient = (ssrExchange: any) => ({
 	exchanges: [
 		dedupExchange,
 		cacheExchange({
+			keys:{
+				PaginatedPosts: () => null
+			},
 			resolvers:{
 				Query:{
 					posts: cursorPagination() //posts name match name in web graphql posts

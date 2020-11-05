@@ -14,7 +14,7 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
-  posts: Array<Post>;
+  posts: PaginatedPosts;
   post?: Maybe<Post>;
   checkLoginUsers?: Maybe<User>;
 };
@@ -28,6 +28,12 @@ export type QueryPostsArgs = {
 
 export type QueryPostArgs = {
   id: Scalars['Float'];
+};
+
+export type PaginatedPosts = {
+  __typename?: 'PaginatedPosts';
+  posts: Array<Post>;
+  hasMore: Scalars['Boolean'];
 };
 
 export type Post = {
@@ -236,10 +242,14 @@ export type PostsQueryVariables = Exact<{
 
 export type PostsQuery = (
   { __typename?: 'Query' }
-  & { posts: Array<(
-    { __typename?: 'Post' }
-    & Pick<Post, 'title' | 'id' | 'createdAt' | 'updatedAt' | 'textSnippet' | 'authorId'>
-  )> }
+  & { posts: (
+    { __typename?: 'PaginatedPosts' }
+    & Pick<PaginatedPosts, 'hasMore'>
+    & { posts: Array<(
+      { __typename?: 'Post' }
+      & Pick<Post, 'id' | 'createdAt' | 'text' | 'authorId' | 'title' | 'textSnippet'>
+    )> }
+  ) }
 );
 
 export const ErrorParametersFragmentDoc = gql`
@@ -345,13 +355,16 @@ export function useCheckLoginUsersQuery(options: Omit<Urql.UseQueryArgs<CheckLog
 };
 export const PostsDocument = gql`
     query Posts($limit: Int!, $cursor: String) {
-  posts(limit: $limit, cursor: $cursor) {
-    title
-    id
-    createdAt
-    updatedAt
-    textSnippet
-    authorId
+  posts(cursor: $cursor, limit: $limit) {
+    hasMore
+    posts {
+      id
+      createdAt
+      text
+      authorId
+      title
+      textSnippet
+    }
   }
 }
     `;
