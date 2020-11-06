@@ -28,6 +28,7 @@ export class Post extends BaseEntity{
   authorId: number
   
   //first parameter specifying type we want to be connected
+  @Field()
   @ManyToOne(()=> User, user => user.posts)
   author:User
 
