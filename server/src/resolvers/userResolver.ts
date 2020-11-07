@@ -11,7 +11,8 @@ import { validateRegister } from '../utils/validateRegister';
 import UsernamePasswordInput from './inputTypes/UsernamePasswordInput';
 import UserResponse from './objectTypes/UserResponseTypes';
 
-
+//FieldResolver overwrites the field type(email) if type annotation provided, it will be called everytime the 
+//UserResolver will be used
 @Resolver(User)
 export class UserResolver {
 	@FieldResolver(() => String)

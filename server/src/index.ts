@@ -14,6 +14,7 @@ import {createConnection} from "typeorm"
 import { Post } from './entities/Post';
 import { User } from './entities/User';
 import path from 'path'
+import { Updoot } from './entities/Updoot';
 
 const main = async () => {
 	const connection = await createConnection({
@@ -24,7 +25,7 @@ const main = async () => {
 		migrations:[path.join(__dirname, "./migrations/*")], //current path + migration folder with everything in it
 		logging: true, //sql sentences will showup in terminal
 		synchronize: true, //create  tables without running migrations 
-		entities: [Post, User]
+		entities: [Post, User, Updoot]
 	});
 	await connection.runMigrations()
 	//await Post.delete({})
