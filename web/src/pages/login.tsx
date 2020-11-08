@@ -9,6 +9,7 @@ import {useRouter} from 'next/router'
 import { withUrqlClient } from 'next-urql';
 import {createUrqlClient} from '../utils/createUrqlClient'
 import NextLink from 'next/link'
+import { useIsAuth } from '../../hooks/useIsAuth';
 
 
 
@@ -25,17 +26,17 @@ const Login: React.FC<{}> = ({}) => {
 				initialValues={{ usernameOrEmail: '', password: '' }}
 				onSubmit={async (values, {setErrors}) => {
                     const response = await login(values);
-                    
+					console.log(router)
 					if(response.data?.login.errors){
 						setErrors(toErrorMap(response.data.login.errors))
 					}else if(response.data?.login.user){
-						if(typeof router.query.next === 'string'){
+						if(typeof router.query.next === "string"){
 							router.push(router.query.next);
 						}
-						
-					}else {
-						router.push("/");
 					}
+					
+					router.push("/");
+					
 					console.log(response)
 				}}
 			>

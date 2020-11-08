@@ -8,7 +8,7 @@ import NextLink from 'next/link';
 
 const Index = () => {
 	//casting type of cursor means that it can be possibly a null type or string type
-	const [variables, setVariables] = useState({limit:33, cursor:null as null | string})
+	const [variables, setVariables] = useState({limit:15, cursor:null as null | string})
 	const [ { data, fetching } ] = usePostsQuery({
 		variables
 	});
@@ -33,6 +33,7 @@ const Index = () => {
 					{data!.posts.posts.map((p) => ( // by exclamation mark we are saying that {data} would never be undefined 
 						<Box key={p.id} p={5} shadow="md" borderWidth="1px">
 							<Heading fontSize="xl">{p.title}</Heading>
+							<Text>posted by {p.author.username}</Text>
 							<Text mt={4}>{p.textSnippet}</Text>
 						</Box>
 					))}

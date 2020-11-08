@@ -37,7 +37,7 @@ const CreatePost: React.FC<{}> = ({}) => {
 							<InputField textarea name="text" placeholder="text..." label="Body" type="text" />
 						</Box>
 						<Button isLoading={isSubmitting} mt={4} type="submit" variantColor="teal">
-							CreatePost
+							Create Post
 						</Button>
 					</Form>
 				)}
