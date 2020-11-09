@@ -14,10 +14,10 @@ import {
 	ObjectType,
 	Info
 } from 'type-graphql';
-import { MyContext } from 'src/types';
+import { MyContext } from '../types';
 import { isAuth } from '../middleware/isAuth';
 import { getConnection } from 'typeorm';
-import { Updoot } from 'src/entities/Updoot';
+import { Updoot } from '../entities/Updoot';
 
 @InputType()
 class PostInput {
@@ -56,27 +56,41 @@ export class PostResolver {
 		const isUpdoot = value !== -1;
 		const realValue = isUpdoot ? 1 : -1;
 		const { userId } = req.session;
+		const updoot = await Updoot.findOne({ where: { postId, userId } });
 
-		// await Updoot.insert({
-		// 	userId,
-		// 	postId,
-		// 	value: realValue
-		// })
-		await getConnection().query(
-			`
-			START TRANSACTION;
+		if (updoot && updoot.value !== realValue) {
+			//the user has voted on the post before
+			//and they are changing their vote
+			await getConnection().query(`
+				START TRANSACTION;
+				
+				update updoot 
+				set value = ${realValue}
+				where "postId" = ${postId} and "userId" = ${userId} ;
+				
+				update post
+				set points = points + ${realValue * 2}
+				where id = ${postId};
 
-			insert into updoot ("userId", "postId", value)
-			values (${userId},${postId},${realValue});
-			
-			update post
-			set points = points + ${realValue}
-			where id = ${postId};
-			
-			COMMIT;
-			`
-		)
-		
+				COMMIT;	
+			`);
+		} else if (!updoot) {
+			//has never vote before
+			await getConnection().query(`
+				START TRANSACTION;
+
+				insert into updoot ("userId", "postId", value)
+				values (${userId},${postId},${realValue});
+				
+				update post
+				set points = points + ${realValue}
+				where id = ${postId};
+
+				COMMIT;
+			`);
+		}
+
+
 		return true;
 	}
 
