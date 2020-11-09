@@ -143,6 +143,15 @@ export type ErrorParametersFragment = (
   & Pick<FieldError, 'field' | 'message'>
 );
 
+export type PostSnippetFragment = (
+  { __typename?: 'Post' }
+  & Pick<Post, 'id' | 'createdAt' | 'points' | 'text' | 'authorId' | 'title' | 'textSnippet'>
+  & { author: (
+    { __typename?: 'User' }
+    & Pick<User, 'id' | 'username'>
+  ) }
+);
+
 export type UserParametersFragment = (
   { __typename?: 'User' }
   & Pick<User, 'id' | 'username'>
@@ -231,6 +240,17 @@ export type RegisterMutation = (
   ) }
 );
 
+export type VoteMutationVariables = Exact<{
+  value: Scalars['Int'];
+  postId: Scalars['Int'];
+}>;
+
+
+export type VoteMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'vote'>
+);
+
 export type CheckLoginUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -255,15 +275,26 @@ export type PostsQuery = (
     & Pick<PaginatedPosts, 'hasMore'>
     & { posts: Array<(
       { __typename?: 'Post' }
-      & Pick<Post, 'id' | 'createdAt' | 'text' | 'authorId' | 'title' | 'textSnippet'>
-      & { author: (
-        { __typename?: 'User' }
-        & Pick<User, 'id' | 'username'>
-      ) }
+      & PostSnippetFragment
     )> }
   ) }
 );
 
+export const PostSnippetFragmentDoc = gql`
+    fragment PostSnippet on Post {
+  id
+  createdAt
+  points
+  text
+  authorId
+  title
+  textSnippet
+  author {
+    id
+    username
+  }
+}
+    `;
 export const ErrorParametersFragmentDoc = gql`
     fragment ErrorParameters on FieldError {
   field
@@ -354,6 +385,15 @@ export const RegisterDocument = gql`
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
 };
+export const VoteDocument = gql`
+    mutation Vote($value: Int!, $postId: Int!) {
+  vote(value: $value, postId: $postId)
+}
+    `;
+
+export function useVoteMutation() {
+  return Urql.useMutation<VoteMutation, VoteMutationVariables>(VoteDocument);
+};
 export const CheckLoginUsersDocument = gql`
     query checkLoginUsers {
   checkLoginUsers {
@@ -370,20 +410,11 @@ export const PostsDocument = gql`
   posts(cursor: $cursor, limit: $limit) {
     hasMore
     posts {
-      id
-      createdAt
-      text
-      authorId
-      title
-      textSnippet
-      author {
-        id
-        username
-      }
+      ...PostSnippet
     }
   }
 }
-    `;
+    ${PostSnippetFragmentDoc}`;
 
 export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<PostsQuery>({ query: PostsDocument, ...options });

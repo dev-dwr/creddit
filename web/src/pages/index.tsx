@@ -1,11 +1,11 @@
-import { Link, Stack, Box, Heading, Text, Flex, Button } from '@chakra-ui/core';
+import { Button, Flex, Stack } from '@chakra-ui/core';
 import { withUrqlClient } from 'next-urql';
-import React, {useState} from 'react';
+import React, { useState } from 'react';
+import { Header } from '../components/Header';
 import { Layout } from '../components/Layout';
+import { Post } from '../components/Post';
 import { usePostsQuery } from '../generated/graphql';
 import { createUrqlClient } from '../utils/createUrqlClient';
-import NextLink from 'next/link';
-
 const Index = () => {
 	//casting type of cursor means that it can be possibly a null type or string type
 	const [variables, setVariables] = useState({limit:15, cursor:null as null | string})
@@ -17,25 +17,14 @@ const Index = () => {
 	}
 	return (
 		<Layout>
-			<Flex align="center">
-				<Heading mb={4}>Creddit</Heading>
-				<NextLink href="/create-post">
-					<Link p={4} ml="auto">
-						create post
-					</Link>
-				</NextLink>
-			</Flex>
+			<Header/>
 
 			{!data && fetching ? (
 				<div>loading...</div>
 			) : (
 				<Stack mb={4} spacing={8}>
 					{data!.posts.posts.map((p) => ( // by exclamation mark we are saying that {data} would never be undefined 
-						<Box key={p.id} p={5} shadow="md" borderWidth="1px">
-							<Heading fontSize="xl">{p.title}</Heading>
-							<Text>posted by {p.author.username}</Text>
-							<Text mt={4}>{p.textSnippet}</Text>
-						</Box>
+						<Post post = {p} key={p.id}/>
 					))}
 				</Stack>
 			)}
