@@ -8,7 +8,7 @@ import {
 	RegisterMutation
 } from '../generated/graphql';
 import { betterUpdateQuery } from './betterUpdateQueryFunction';
-
+import gql from 'graphql-tag';
 
 
 //global error handling
@@ -81,6 +81,25 @@ export const createUrqlClient = (ssrExchange: any) => ({
 			updates: {
 				// when login/register/logout mutation will run, it will update the cache
 				Mutation: {
+					vote: (_result, args, cache, info)=>{
+						const data = cache.readFragment(gql`
+						fragment _ on Post{
+							id
+							points
+						}
+						`, {id: args.postId} as any)
+						if(data){
+							const updatedPoints = (data.points as number) + (args.value as number)
+							cache.writeFragment(
+								gql`
+									fragment __ on Post{
+										points
+									}
+								`,
+								{id:args.postId, points: updatedPoints} as any
+							)
+						}
+					},
 					createPost: (_result, args, cache, info) =>{
 						//logic: creating Post is sending posts to the database, on the client side
 						//we are removing item from the cache thus this will re-fetch data from the cache 
