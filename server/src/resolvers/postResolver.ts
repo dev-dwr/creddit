@@ -90,7 +90,6 @@ export class PostResolver {
 			`);
 		}
 
-
 		return true;
 	}
 
@@ -100,16 +99,21 @@ export class PostResolver {
 		limit: number,
 		@Arg('cursor', () => String, { nullable: true })
 		cursor: string | null,
-		@Ctx() {req}:MyContext
+		@Ctx() { req }: MyContext
 	): Promise<PaginatedPosts> {
 		//cursor is giving us position which will be our reference
 		const realLimit = Math.min(50, limit);
 		//fetching x + 1 posts that client asked to
 		const realLimitPlusOne = realLimit + 1;
 
-		const replacements: any[] = [ realLimitPlusOne, req.session.userId ];
+		const replacements: any[] = [ realLimitPlusOne ];
+		if (req.session.userId) {
+			replacements.push(req.session.userId);
+		}
+		let cursorIndex = 3;
 		if (cursor) {
 			replacements.push(new Date(parseInt(cursor)));
+			cursorIndex = replacements.length;
 		}
 		const posts = await getConnection().query(
 			`
@@ -121,14 +125,12 @@ export class PostResolver {
 				'createdAt', u."createdAt",
 				'updatedAt', u."updatedAt"
 			) author,
-			${
-				req.session.userId 
+			${req.session.userId
 				? '(select value from updoot where "userId" = $2 and "postId" = p.id) as "voteStatus"'
-				: 'null as "voteStatus"'
-			}
+				: 'null as "voteStatus"'}
 			from post as p
 			inner join public.user as u on u.id = p."authorId"
-			${cursor ? `where p."createdAt" < $3` : ''}
+			${cursor ? `where p."createdAt" < $${cursorIndex}` : ''}
 			order by p."createdAt" DESC
 			limit $1
 		`,

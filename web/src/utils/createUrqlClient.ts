@@ -9,6 +9,7 @@ import {
 } from '../generated/graphql';
 import { betterUpdateQuery } from './betterUpdateQueryFunction';
 import gql from 'graphql-tag';
+import { isServer } from './isServerSide';
 
 
 //global error handling
@@ -62,10 +63,19 @@ export const cursorPagination = (): Resolver => {
 
 
 //const y = () => ({}) // returns an object
-export const createUrqlClient = (ssrExchange: any) => ({
+export const createUrqlClient = (ssrExchange: any, ctx:any) => {
+	let cookie = "";
+
+	if(isServer()){
+		cookie = ctx.req.headers.cookie;
+	}
+	return {
 	url: 'http://localhost:4000/graphql',
 	fetchOptions: {
-		credentials: 'include' as const  //send the cookie
+		credentials: 'include' as const,  //send the cookie
+		headers: cookie ? { // including cookies to next.js server 
+			cookie
+		} : undefined
 	},
 	exchanges: [
 		dedupExchange,
@@ -167,5 +177,5 @@ export const createUrqlClient = (ssrExchange: any) => ({
         fetchExchange,
 	],
 	
-});
+}};
 
