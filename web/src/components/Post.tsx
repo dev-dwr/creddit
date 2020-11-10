@@ -14,6 +14,9 @@ export const Post: React.FC<Post> = ({ post }) => {
 			<Flex direction="column" justifyContent="center" alignItems="center" mr={4}>
 				<IconButton
 					onClick={async () => {
+						if(post.voteStatus === 1){
+							return;
+						}
 						setLoading('updoot-loading');
 						await vote({
 							postId: post.id,
@@ -25,10 +28,14 @@ export const Post: React.FC<Post> = ({ post }) => {
 					icon="chevron-up"
 					aria-label="Up vote post"
 					fontSize="20px"
+					variantColor ={post.voteStatus === 1 ? "green" : undefined}
 				/>
 				{post.points}
 				<IconButton
 					onClick={async () => {
+						if(post.voteStatus === -1){
+							return;
+						}
 						setLoading('downdoot-loading');
 						await vote({
 							postId: post.id,
@@ -40,6 +47,7 @@ export const Post: React.FC<Post> = ({ post }) => {
 					icon="chevron-down"
 					aria-label="Down vote post"
 					fontSize="20px"
+					variantColor={post.voteStatus === -1 ? "red" : undefined}
 				/>
 			</Flex>
 			<Box>

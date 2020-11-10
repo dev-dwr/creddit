@@ -99,14 +99,15 @@ export class PostResolver {
 		@Arg('limit', () => Int)
 		limit: number,
 		@Arg('cursor', () => String, { nullable: true })
-		cursor: string | null
+		cursor: string | null,
+		@Ctx() {req}:MyContext
 	): Promise<PaginatedPosts> {
 		//cursor is giving us position which will be our reference
 		const realLimit = Math.min(50, limit);
 		//fetching x + 1 posts that client asked to
 		const realLimitPlusOne = realLimit + 1;
 
-		const replacements: any[] = [ realLimitPlusOne ];
+		const replacements: any[] = [ realLimitPlusOne, req.session.userId ];
 		if (cursor) {
 			replacements.push(new Date(parseInt(cursor)));
 		}
@@ -119,10 +120,15 @@ export class PostResolver {
 				'email', u.email,
 				'createdAt', u."createdAt",
 				'updatedAt', u."updatedAt"
-			) author
+			) author,
+			${
+				req.session.userId 
+				? '(select value from updoot where "userId" = $2 and "postId" = p.id) as "voteStatus"'
+				: 'null as "voteStatus"'
+			}
 			from post as p
 			inner join public.user as u on u.id = p."authorId"
-			${cursor ? `where p."createdAt" < $2` : ''}
+			${cursor ? `where p."createdAt" < $3` : ''}
 			order by p."createdAt" DESC
 			limit $1
 		`,

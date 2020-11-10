@@ -1,11 +1,12 @@
 fragment PostSnippet on Post {
-		id
-		createdAt
-		points
-		text
-		authorId
-		title
-		textSnippet
+	id
+	createdAt
+	points
+	text
+	authorId
+	title
+	textSnippet
+	voteStatus
 	author {
 		id
 		username

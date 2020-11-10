@@ -40,6 +40,7 @@ export type Post = {
   __typename?: 'Post';
   id: Scalars['Float'];
   title: Scalars['String'];
+  voteStatus?: Maybe<Scalars['Int']>;
   text: Scalars['String'];
   points: Scalars['Float'];
   authorId: Scalars['Float'];
@@ -145,7 +146,7 @@ export type ErrorParametersFragment = (
 
 export type PostSnippetFragment = (
   { __typename?: 'Post' }
-  & Pick<Post, 'id' | 'createdAt' | 'points' | 'text' | 'authorId' | 'title' | 'textSnippet'>
+  & Pick<Post, 'id' | 'createdAt' | 'points' | 'text' | 'authorId' | 'title' | 'textSnippet' | 'voteStatus'>
   & { author: (
     { __typename?: 'User' }
     & Pick<User, 'id' | 'username'>
@@ -289,6 +290,7 @@ export const PostSnippetFragmentDoc = gql`
   authorId
   title
   textSnippet
+  voteStatus
   author {
     id
     username
