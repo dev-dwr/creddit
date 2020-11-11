@@ -9,7 +9,6 @@ import {useRouter} from 'next/router'
 import { withUrqlClient } from 'next-urql';
 import {createUrqlClient} from '../utils/createUrqlClient'
 import NextLink from 'next/link'
-import { useIsAuth } from '../../hooks/useIsAuth';
 
 
 

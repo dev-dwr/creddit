@@ -91,6 +91,9 @@ export const createUrqlClient = (ssrExchange: any, ctx:any) => {
 			updates: {
 				// when login/register/logout mutation will run, it will update the cache
 				Mutation: {
+					deletePost:(_result, args, cache, info) =>{
+						cache.invalidate({__typename:"Post", id: args.id as number})
+					},
 					vote: (_result, args, cache, info)=>{
 						const data = cache.readFragment(gql`
 						fragment _ on Post{

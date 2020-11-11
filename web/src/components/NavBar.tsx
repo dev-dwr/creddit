@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Link } from '@chakra-ui/core';
+import { Box, Button, Flex, Heading, Link } from '@chakra-ui/core';
 import React from 'react';
 import NextLink from 'next/link'
 import { useCheckLoginUsersQuery, useLogoutMutation } from '../generated/graphql';
@@ -30,8 +30,13 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
         )
     }else{ // user is logged in
         body = (
-            <Flex>
+            <Flex align= "center">
                <Box color = "white" mt ={2}>{data.checkLoginUsers.username}</Box>
+               <NextLink href="/create-post">
+					<Button variantColor="teal" as={Link} ml={4}>
+						create post
+					</Button>
+				</NextLink>
                 <Button ml={5} 
                 onClick = {()=> logout()}
                 isLoading = {logoutFetchingType} 
@@ -41,7 +46,12 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
     }
     
 	return (
-		<Flex zIndex={999} position="sticky" top={0} bg="tomato" p={4}>
+		<Flex zIndex={999} position="sticky" top={0} bg="tomato" p={4} align="center">
+            <NextLink href ="/">
+                <Link>
+                    <Heading color="white">Creddit</Heading>
+                </Link>
+            </NextLink>
 			<Box ml = {"auto"}>{body}</Box>
 		</Flex>
 	);
