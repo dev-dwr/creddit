@@ -12,7 +12,8 @@ import {
 	FieldResolver,
 	Root,
 	ObjectType,
-	Info
+	Info,
+	Args
 } from 'type-graphql';
 import { MyContext } from '../types';
 import { isAuth } from '../middleware/isAuth';
@@ -24,7 +25,7 @@ class PostInput {
 	@Field(() => String, { nullable: true })
 	title: string;
 
-	@Field() text: string;
+	@Field(()=>String, {nullable:true}) text: string;
 }
 @ObjectType()
 class PaginatedPosts {
@@ -174,21 +175,21 @@ export class PostResolver {
 	}
 
 	@Mutation(() => Post, { nullable: true })
-	async updatePost(@Arg('id') id: number, @Arg('options') options: PostInput): Promise<Post | null> {
-		const post = await Post.findOne({ where: { id } });
-		if (!post) {
-			return null;
-		}
-		if (typeof options.title !== undefined) {
-			await Post.update(
-				{ id },
-				{
-					title: options.title,
-					text: options.text
-				}
-			);
-		}
-		return post;
+	@UseMiddleware(isAuth)
+	async updatePost(
+		@Arg('id', () => Int) id: number,
+		@Arg('options') options: PostInput,
+		@Ctx() { req }: MyContext
+	): Promise<Post | null> {
+		const result = await getConnection()
+		.createQueryBuilder()
+		.update(Post)
+		.set({title: options.title, text: options.text})
+		.where('id = :id and "authorId" = :authorId', {id, authorId: req.session.userId})
+		.returning("*")
+		.execute()
+
+		return result.raw[0]
 	}
 
 	@Mutation(() => Boolean)
@@ -199,16 +200,16 @@ export class PostResolver {
 		@Ctx() { req }: MyContext
 	): Promise<boolean> {
 		//NOT CASCADE WAY
-		const post = await Post.findOne({where:{id:id}})
-		if(!post){
+		const post = await Post.findOne({ where: { id: id } });
+		if (!post) {
 			return false;
 		}
-		if(post.authorId !== req.session.userId){
+		if (post.authorId !== req.session.userId) {
 			// do not have permission to delete
-			throw new Error("not authorized")
+			throw new Error('not authorized');
 		}
-		await Updoot.delete({postId: id})
-		 await Post.delete({id: id}); 
+		await Updoot.delete({ postId: id });
+		await Post.delete({ id: id });
 		return true;
 	}
 }

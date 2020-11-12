@@ -1,15 +1,18 @@
-import { Flex, IconButton, Box, Heading, Text, Link } from '@chakra-ui/core';
+import { Box, Flex, Heading, IconButton, Link, Text } from '@chakra-ui/core';
+import NextLink from 'next/link';
 import React, { useState } from 'react';
-import NextLink from 'next/link'
-import { PostSnippetFragment, useDeletePostMutation, useVoteMutation } from '../generated/graphql';
+import { PostSnippetFragment, useCheckLoginUsersQuery, useDeletePostMutation, useVoteMutation } from '../generated/graphql';
+import { EditDeletePostButtons } from './EditDeletePostButtons';
 
 interface Post {
 	post: PostSnippetFragment;
 }
 
 export const Post: React.FC<Post> = ({ post }) => {
-	const [ loading, setLoading ] = useState<'updoot-loading' | 'downdoot-loading' | 'not-loading'>('not-loading'); //type union
+	const [ loading, setLoading ] = useState<'updoot-loading' | 'downdoot-loading' | 'not-loading'>('not-loading'); 
+	//type union
 	const [ {}, vote ] = useVoteMutation();
+	const [{data}] = useCheckLoginUsersQuery();
 	const [{}, deletePost] = useDeletePostMutation();
 	return (
 		<Flex key={post.id} p={5} shadow="md" borderWidth="1px">
@@ -61,16 +64,9 @@ export const Post: React.FC<Post> = ({ post }) => {
 				<Text>posted by {post.author.username}</Text>
 				<Flex align="center">
 					<Text flex={1} mt={4}>{post.textSnippet}</Text>
-					<IconButton
-					icon="delete"
-					variantColor="red"
-					aria-label= "Delete Post"
-					onClick= {()=>{
-						deletePost({
-							id: post.id
-						})
-					}}
-					/>
+					<Box  ml="auto">
+					<EditDeletePostButtons id = {post.id} authorId = {post.authorId}/>
+					</Box>
 				</Flex>
 			</Box>
 		</Flex>
