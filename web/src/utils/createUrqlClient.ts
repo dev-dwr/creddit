@@ -1,4 +1,4 @@
-import { cacheExchange, Resolver } from '@urql/exchange-graphcache';
+import { cacheExchange, Resolver, Cache } from '@urql/exchange-graphcache';
 import  Router  from 'next/router';
 import { dedupExchange, Exchange, fetchExchange, stringifyVariables } from 'urql';
 import { pipe, tap } from 'wonka';
@@ -19,6 +19,16 @@ const errorExchange:Exchange = ({forward}) => ops$ => {
 			Router.replace("/login")
 		}
 	}))
+}
+
+function invalidateAllPosts(cache:Cache) {
+	const allFields = cache.inspectFields("Query")
+	const fieldInfos = allFields.filter(
+		info => info.fieldName === "posts"
+	)
+	fieldInfos.forEach(fi =>{
+		cache.invalidate("Query", "posts", fi.arguments || {});
+	})
 }
 
 export const cursorPagination = (): Resolver => {
@@ -123,13 +133,7 @@ export const createUrqlClient = (ssrExchange: any, ctx:any) => {
 					createPost: (_result, args, cache, info) =>{
 						//logic: creating Post is sending posts to the database, on the client side
 						//we are removing item from the cache thus this will re-fetch data from the cache 
-						const allFields = cache.inspectFields("Query")
-						const fieldInfos = allFields.filter(
-							info => info.fieldName === "posts"
-						)
-						fieldInfos.forEach(fi =>{
-							cache.invalidate("Query", "posts", fi.arguments || {});
-						})
+						invalidateAllPosts(cache);
 					},
 					logout: (_result, args, cache, info) => {
 						betterUpdateQuery<LogoutMutation, CheckLoginUsersQuery>(
@@ -155,6 +159,7 @@ export const createUrqlClient = (ssrExchange: any, ctx:any) => {
 								}
 							}
 						);
+						invalidateAllPosts(cache)
 					},
 					register: (_result, args, cache, info) => {
 						betterUpdateQuery<RegisterMutation, CheckLoginUsersQuery>(
