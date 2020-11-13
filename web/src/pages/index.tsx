@@ -8,11 +8,17 @@ import { createUrqlClient } from '../utils/createUrqlClient';
 const Index = () => {
 	//casting type of cursor means that it can be possibly a null type or string type
 	const [ variables, setVariables ] = useState({ limit: 15, cursor: null as null | string });
-	const [ { data, fetching } ] = usePostsQuery({
+	const [ { data, error, fetching } ] = usePostsQuery({
 		variables: variables
 	});
 	if (!fetching && !data) {
-		return <div>Query failed for some reason</div>;
+		return(
+		<div>
+			<div>
+				Query failed for some reason
+			</div>
+		<div>{error}</div>
+		</div>);
 	}
 	return (
 		<Layout>

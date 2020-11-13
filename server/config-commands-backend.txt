@@ -42,3 +42,5 @@ npx typeorm migration:create -n FakePost -d src/migrations - create migrations i
 
 if we want to declare data in postgresql and we have capital letter in the name of it 
 we need to specify it by for example making -> '"createdAt"'(in our code editor) or "createdAt" in mockaroo.com
+
+yarn add dataloader
