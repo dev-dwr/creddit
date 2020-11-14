@@ -7,8 +7,11 @@ import {useRouter} from  "next/router"
 
 
 export const NavBar: React.FC<{}> = ({}) => {
+
     const [{fetching: logoutFetchingType}, logout] = useLogoutMutation();
+
     const router = useRouter();
+
     const [{data, fetching}] = useCheckLoginUsersQuery({
         pause: isServer()
     }); 
@@ -17,7 +20,8 @@ export const NavBar: React.FC<{}> = ({}) => {
 
     if(fetching){ 
       // data is loading
-    }else if(!data?.checkLoginUsers){ //user not logged in
+    }else if(!data?.checkLoginUsers){ 
+        //user not logged in
         body = (
             <>
                 <NextLink href ="/login">
@@ -29,7 +33,8 @@ export const NavBar: React.FC<{}> = ({}) => {
                 </NextLink>
             </>
         )
-    }else{ // user is logged in
+    }else{ 
+        // user is logged in
         body = (
             <Flex align= "center">
                <Box color = "white" mt ={2}>{data.checkLoginUsers.username}</Box>
@@ -39,8 +44,8 @@ export const NavBar: React.FC<{}> = ({}) => {
 					</Button>
 				</NextLink>
                 <Button ml={5} 
-                onClick = {async()=> {
-                    await logout(); //wait until logout is finished
+                onClick = {async() => {
+                    await logout(); 
                     router.reload();
                 }}
                 isLoading = {logoutFetchingType} 
@@ -50,7 +55,7 @@ export const NavBar: React.FC<{}> = ({}) => {
     }
     
 	return (
-		<Flex zIndex={999} position="sticky" top={0} bg="tomato" p={4} align="center">
+		<Flex zIndex={1} position="sticky" top={0} bg="tomato" p={4} align="center">
             <NextLink href ="/">
                 <Link>
                     <Heading color="white">Creddit</Heading>

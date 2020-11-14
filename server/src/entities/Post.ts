@@ -4,7 +4,7 @@ import { PrimaryGeneratedColumn, Column, CreateDateColumn, Entity, UpdateDateCol
 import { Updoot } from "./Updoot";
 import { User } from "./User";
 
-@ObjectType() //exposing this entity to graphql schema by @Field() and @ObjectType()
+@ObjectType() 
 @Entity()
 export class Post extends BaseEntity{
 
@@ -34,7 +34,7 @@ export class Post extends BaseEntity{
   @Column()
   authorId: number
   
-  //first parameter specifying type we want to be connected
+  
   @Field()
   @ManyToOne(()=> User, user => user.posts)
   author:User

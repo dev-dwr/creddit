@@ -10,12 +10,17 @@ interface EditDeletePostButtonsProps {
 }
 
 export const EditDeletePostButtons: React.FC<EditDeletePostButtonsProps> = ({ id, authorId }) => {
+
 	const [{}, deletePost] = useDeletePostMutation();
+
 	const router = useRouter();
-    const [{data}] = useCheckLoginUsersQuery();
+
+	const [{data}] = useCheckLoginUsersQuery();
+	
     if(data?.checkLoginUsers?.id !== authorId){
         return null;
-    }
+	}
+	
     return (
 		<Box ml="auto">
 			<NextLink href="/post/edit/[id]" as={`/post/edit/${id}`}>
@@ -30,7 +35,6 @@ export const EditDeletePostButtons: React.FC<EditDeletePostButtonsProps> = ({ id
 						id:id
 					});
 					router.push("/")
-
 				}}
 			/>
 		</Box>

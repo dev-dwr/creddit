@@ -14,8 +14,10 @@ import NextLink from 'next/link'
 
 
 const Login: React.FC<{}> = ({}) => {
+
 	const [ {}, login ] = useLoginMutation();
 	const router = useRouter();
+	
 	return (
 		<Wrapper variant="small">
             <Text mt={2} fontSize="2xl" fontWeight="semibold" lineHeight="short">

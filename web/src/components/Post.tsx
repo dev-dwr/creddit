@@ -1,7 +1,7 @@
 import { Box, Flex, Heading, IconButton, Link, Text } from '@chakra-ui/core';
 import NextLink from 'next/link';
 import React, { useState } from 'react';
-import { PostSnippetFragment, useCheckLoginUsersQuery, useDeletePostMutation, useVoteMutation } from '../generated/graphql';
+import { PostSnippetFragment, useVoteMutation } from '../generated/graphql';
 import { EditDeletePostButtons } from './EditDeletePostButtons';
 
 interface Post {
@@ -9,14 +9,17 @@ interface Post {
 }
 
 export const Post: React.FC<Post> = ({ post }) => {
-	const [ loading, setLoading ] = useState<'updoot-loading' | 'downdoot-loading' | 'not-loading'>('not-loading'); 
+
 	//type union
+	const [ loading, setLoading ] = useState<'updoot-loading' | 'downdoot-loading' | 'not-loading'>('not-loading');
+	
 	const [ {}, vote ] = useVoteMutation();
-	const [{data}] = useCheckLoginUsersQuery();
-	const [{}, deletePost] = useDeletePostMutation();
+	
 	return (
 		<Flex key={post.id} p={5} shadow="md" borderWidth="1px">
+
 			<Flex direction="column" justifyContent="center" alignItems="center" mr={4}>
+
 				<IconButton
 					onClick={async () => {
 						if (post.voteStatus === 1) {
@@ -35,7 +38,9 @@ export const Post: React.FC<Post> = ({ post }) => {
 					fontSize="20px"
 					variantColor={post.voteStatus === 1 ? 'green' : undefined}
 				/>
+
 				{post.points}
+				
 				<IconButton
 					onClick={async () => {
 						if (post.voteStatus === -1) {
@@ -54,18 +59,22 @@ export const Post: React.FC<Post> = ({ post }) => {
 					fontSize="20px"
 					variantColor={post.voteStatus === -1 ? 'red' : undefined}
 				/>
+
 			</Flex>
-			<Box flex ={1}>
-				<NextLink href = "/post/[id]" as = {`/post/${post.id}`}>
+			
+			<Box flex={1}>
+				<NextLink href="/post/[id]" as={`/post/${post.id}`}>
 					<Link>
 						<Heading fontSize="xl">{post.title}</Heading>
 					</Link>
 				</NextLink>
 				<Text>posted by {post.author.username}</Text>
 				<Flex align="center">
-					<Text flex={1} mt={4}>{post.textSnippet}</Text>
-					<Box  ml="auto">
-					<EditDeletePostButtons id = {post.id} authorId = {post.authorId}/>
+					<Text flex={1} mt={4}>
+						{post.textSnippet}
+					</Text>
+					<Box ml="auto">
+						<EditDeletePostButtons id={post.id} authorId={post.authorId} />
 					</Box>
 				</Flex>
 			</Box>

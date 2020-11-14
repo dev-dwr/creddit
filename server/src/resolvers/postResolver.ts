@@ -4,16 +4,11 @@ import {
 	Query,
 	Arg,
 	Mutation,
-	InputType,
-	Field,
 	Ctx,
 	UseMiddleware,
 	Int,
 	FieldResolver,
-	Root,
-	ObjectType,
-	Info,
-	Args
+	Root
 } from 'type-graphql';
 import { MyContext } from '../types';
 import { isAuth } from '../middleware/isAuth';
@@ -21,35 +16,23 @@ import { getConnection } from 'typeorm';
 import { Updoot } from '../entities/Updoot';
 import { User } from '../entities/User';
 
-@InputType()
-class PostInput {
-	@Field(() => String, { nullable: true })
-	title: string;
+import PaginatedPosts from './objectTypes/PaginatedPosts'
+import PostInput from './inputTypes/PostInput';
 
-	@Field(() => String, { nullable: true })
-	text: string;
-}
-@ObjectType()
-class PaginatedPosts {
-	@Field(() => [ Post ])
-	posts: Post[];
-
-	@Field() hasMore: boolean;
-}
 
 @Resolver(Post)
 export class PostResolver {
-	@FieldResolver(() => String) //provided from graphql
-	textSnippet(
-		//everytime we get Post obj textSnippet will call
-		@Root() root: Post
-	) {
+
+	@FieldResolver(() => String) 
+	textSnippet(@Root() root: Post) {
 		return root.text.slice(0, 100);
 	}
+
 	@FieldResolver(() => User)
 	author(@Root() post: Post, @Ctx() { userLoader }: MyContext) {
 		return userLoader.load(post.authorId);
 	}
+
 	@FieldResolver(() => Int, { nullable: true })
 	async voteStatus(@Root() post: Post, @Ctx() { updootLoader, req }: MyContext) {
 		if(!req.session.userId){
@@ -59,6 +42,7 @@ export class PostResolver {
 		return updoot ? updoot.value : null;
 	}
 
+	
 	@Mutation(() => Boolean)
 	@UseMiddleware(isAuth)
 	async vote(
@@ -68,14 +52,20 @@ export class PostResolver {
 		value: number,
 		@Ctx() { req }: MyContext
 	) {
+
 		const isUpdoot = value !== -1;
+
 		const realValue = isUpdoot ? 1 : -1;
+
 		const { userId } = req.session;
+
 		const updoot = await Updoot.findOne({ where: { postId, userId } });
 
 		if (updoot && updoot.value !== realValue) {
-			//the user has voted on the post before
-			//and they are changing their vote
+			/*
+			the user has voted on the post before
+			and they are changing their vote
+			*/
 			await getConnection().query(`
 				START TRANSACTION;
 				
@@ -113,12 +103,11 @@ export class PostResolver {
 		@Arg('limit', () => Int)
 		limit: number,
 		@Arg('cursor', () => String, { nullable: true })
-		cursor: string | null,
-		@Ctx() { req }: MyContext
+		cursor: string | null
 	): Promise<PaginatedPosts> {
-		//cursor is giving us position which will be our reference
+		
 		const realLimit = Math.min(50, limit);
-		//fetching x + 1 posts that client asked to
+
 		const realLimitPlusOne = realLimit + 1;
 
 		const replacements: any[] = [ realLimitPlusOne ];
@@ -128,29 +117,13 @@ export class PostResolver {
 		}
 		const posts = await getConnection().query(
 			`
-			select p.*
-	
-			from post as p
+			select p.* from post as p
 			${cursor ? `where p."createdAt" < $2` : ''}
 			order by p."createdAt" DESC
 			limit $1
 		`,
 			replacements
 		);
-
-		console.log('posts: ', posts);
-
-		// const queryBuilder = getConnection()
-		// 	.getRepository(Post)
-		// 	.createQueryBuilder('p') // p - alias for post
-		// 	.innerJoinAndSelect("p.author", "author", 'author.id = p."authorId"')
-		// 	.orderBy('p."createdAt"', 'DESC')
-		// 	.take(realLimitPlusOne);
-		// if (cursor) {
-		// 	//paging through items with createdAt as a reference
-		// 	queryBuilder.where('p."createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
-		// }
-		//const posts = await queryBuilder.getMany();
 
 		return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne };
 	}
@@ -194,21 +167,24 @@ export class PostResolver {
 	}
 
 	@Mutation(() => Boolean)
-	@UseMiddleware(isAuth) //check if you are logged in
+	@UseMiddleware(isAuth) 
 	async deletePost(
 		@Arg('id', () => Int)
 		id: number,
 		@Ctx() { req }: MyContext
 	): Promise<boolean> {
+		
 		//NOT CASCADE WAY
 		const post = await Post.findOne({ where: { id: id } });
+		
 		if (!post) {
 			return false;
 		}
+		
 		if (post.authorId !== req.session.userId) {
-			// do not have permission to delete
 			throw new Error('not authorized');
 		}
+
 		await Updoot.delete({ postId: id });
 		await Post.delete({ id: id });
 		return true;

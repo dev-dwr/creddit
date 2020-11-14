@@ -1,0 +1,59 @@
+@ObjectType() //exposing this entity to graphql schema by @Field() and @ObjectType()
+
+//onDelete: "CASCADE" //when the post will have been deleted it will also delete updoot if it's connected
+
+//first parameter specifying type we want to be connected
+  @Field()
+  @ManyToOne(()=> User, user => user.posts)
+
+  //MiddlewareFn special type from graphql
+//middleware will runs before your resolver, you can also specify context as a generic
+
+@FieldResolver(() => String) //provided from graphql
+
+//everytime we get Post obj textSnippet will call
+		@Root() root: Post
+
+
+        // const queryBuilder = getConnection()
+		// 	.getRepository(Post)
+		// 	.createQueryBuilder('p') // p - alias for post
+		// 	.innerJoinAndSelect("p.author", "author", 'author.id = p."authorId"')
+		// 	.orderBy('p."createdAt"', 'DESC')
+		// 	.take(realLimitPlusOne);
+		// if (cursor) {
+		// 	//paging through items with createdAt as a reference
+		// 	queryBuilder.where('p."createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
+		// }
+		//const posts = await queryBuilder.getMany();
+
+//cursor is giving us position which will be our reference
+
+
+//FieldResolver overwrites the field type(email) if type annotation provided, it will be called everytime the 
+//UserResolver will be used
+
+@Mutation(() => UserResponse) //getting access to Fields inside UserResponse object schema
+    REGISTERING THE USERS
+		/* 
+			let user;
+			try{
+				const result = await getConnection()
+		 		.createQueryBuilder()
+		 		.insert()
+		 		.into(User)
+				.values({
+		 			username: options.username,
+					password: hashedPassword,
+		 			email: options.email
+		 		})
+		 		.returning('*')
+		 		.execute();
+		 		user = result.raw[0];
+			}catch (err) {
+			if (err.code === '23505' || err.detail.includes('already exists')) {
+				return throwAnError('username', 'username already taken');
+			}
+		*/
+
+        //context is an obj which is accessible by all resolvers

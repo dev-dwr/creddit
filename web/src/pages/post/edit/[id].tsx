@@ -7,18 +7,22 @@ import { InputField } from '../../../components/InputField';
 import { Layout } from '../../../components/Layout';
 import { usePostQuery, useUpdatePostMutation } from '../../../generated/graphql';
 import { createUrqlClient } from '../../../utils/createUrqlClient';
-import { useGetIntId } from '../../../utils/useGetIntId';
 
 const EditPost: React.FC<{}> = ({}) => {
-    const intId = useGetIntId();
-    const router = useRouter();
+	
+	const router = useRouter();
+
+	const intId =  typeof router.query.id === 'string' ? parseInt(router.query.id) : -1;
+	
     const [{data, fetching}] = usePostQuery({
         pause: intId === -1,
         variables: {
           id: intId,
         },
-    })
-    const [{}, updatePost] = useUpdatePostMutation();
+	});
+	
+	const [{}, updatePost] = useUpdatePostMutation();
+	
     if(fetching){
         return(
             <Layout>
@@ -26,13 +30,15 @@ const EditPost: React.FC<{}> = ({}) => {
             </Layout>
         )
     }
-    if(!data?.post){
+	
+	if(!data?.post){
         return(
             <Layout>
                 <Box>Could not find post</Box>
             </Layout>
         )
-    }
+	}
+
 	return (
 		<Layout variant="small">
 			<Text mt={2} fontSize="2xl" fontWeight="semibold" lineHeight="short">

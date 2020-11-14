@@ -10,9 +10,13 @@ import { useCreatePostMutation } from '../generated/graphql';
 import { createUrqlClient } from '../utils/createUrqlClient';
 
 const CreatePost: React.FC<{}> = ({}) => {
+
     const [ {}, createPost ] = useCreatePostMutation();
-    useIsAuth();
-    const router = useRouter();
+	
+	useIsAuth();
+	
+	const router = useRouter();
+	
 	return (
 		<Layout variant = "small">
 			<Text mt={2} fontSize="2xl" fontWeight="semibold" lineHeight="short">
@@ -25,10 +29,10 @@ const CreatePost: React.FC<{}> = ({}) => {
                     if(!result.error){
                         router.push("/")
                     }
-                    
 				}}
 			>
-				{({ isSubmitting }) => (
+				{
+				({ isSubmitting }) => (
 					<Form>
 						<Box mt={4}>
 							<InputField name="title" placeholder="title" label="Title" />
@@ -40,7 +44,8 @@ const CreatePost: React.FC<{}> = ({}) => {
 							Create Post
 						</Button>
 					</Form>
-				)}
+				)
+				}
 			</Formik>
 		</Layout>
 	);

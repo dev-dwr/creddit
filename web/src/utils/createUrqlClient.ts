@@ -31,7 +31,7 @@ function invalidateAllPosts(cache:Cache) {
 	})
 }
 
-export const cursorPagination = (): Resolver => {
+export const cursorPagination = ():Resolver => {
   
 	return (_parent, fieldArgs, cache, info) => {
 	  const { parentKey: entityKey, fieldName } = info;
@@ -45,14 +45,20 @@ export const cursorPagination = (): Resolver => {
 
 	  const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`
 	  const isInTheCache = cache.resolve(cache.resolveFieldByKey(entityKey, fieldKey) as string, "posts")
-	  //as a true urql will think that we do not gave all the data so it will fetch remain data from the server
-	  //if its not in the case we will return partial
+	 /*
+	  as a true urql will think that we do not gave all
+	  the data so it will fetch remain data from the server
+	  if its not in the case we will return partial
+	 */
+
 	  info.partial = !isInTheCache 
 	  
 	  let hasMore = true; 
+
 	  //combining data 
 	  const result: string[] = []
-	  fieldInfos.forEach(fi =>{ //looping in all elements we have in the list
+	  fieldInfos.forEach(fi =>{ 
+		//looping in all elements we have in the list
 		const key = cache.resolveFieldByKey(entityKey, fi.fieldKey) as string;
 		
 		const _hasMore = cache.resolve(key, "hasMore")
@@ -72,7 +78,6 @@ export const cursorPagination = (): Resolver => {
   };
 
 
-//const y = () => ({}) // returns an object
 export const createUrqlClient = (ssrExchange: any, ctx:any) => {
 	let cookie = "";
 
@@ -82,9 +87,9 @@ export const createUrqlClient = (ssrExchange: any, ctx:any) => {
 	return {
 	url: 'http://localhost:4000/graphql',
 	fetchOptions: {
-		credentials: 'include' as const,  //send the cookie
-		headers: cookie ? { // including cookies to next.js server 
-			cookie
+		credentials: 'include' as const, //send the cookie
+		headers: cookie ? { 
+			cookie // including cookies to next.js server 
 		} : undefined
 	},
 	exchanges: [
@@ -95,7 +100,7 @@ export const createUrqlClient = (ssrExchange: any, ctx:any) => {
 			},
 			resolvers:{
 				Query:{
-					posts: cursorPagination() //posts name match name in web graphql posts
+					posts: cursorPagination() 
 				}
 			},
 			updates: {
@@ -131,8 +136,11 @@ export const createUrqlClient = (ssrExchange: any, ctx:any) => {
 						}
 					},
 					createPost: (_result, args, cache, info) =>{
-						//logic: creating Post is sending posts to the database, on the client side
-						//we are removing item from the cache thus this will re-fetch data from the cache 
+						/*
+						logic: creating Post is sending posts to the database, on the client side
+						we are removing item from the cache thus this will re-fetch data from the cache 
+						*/
+						
 						invalidateAllPosts(cache);
 					},
 					logout: (_result, args, cache, info) => {

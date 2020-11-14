@@ -15,8 +15,11 @@ import NextLink from 'next/link'
 
 
 const ChangePassword: NextPage = () => {
+
     const [{}, changePassword] = useChangePasswordMutation();
+
     const router = useRouter();
+
     const [tokenErr, setTokenErr] = useState("");
 
     return (
@@ -33,7 +36,6 @@ const ChangePassword: NextPage = () => {
                     });
                     if(response.data?.changePassword.errors){
                         const errorMap = toErrorMap(response.data.changePassword.errors)
-                        console.log(errorMap)
                         if('token' in errorMap){
                             setTokenErr(errorMap.token)
                         }
@@ -51,7 +53,7 @@ const ChangePassword: NextPage = () => {
                             type="password"
                             />
 
-                        {tokenErr ? (
+                        { tokenErr ? (
                         <Flex>
                             <Box mr={4} style={{color: "red"}}>{tokenErr}</Box>
                             <NextLink href ="/forgot-password">

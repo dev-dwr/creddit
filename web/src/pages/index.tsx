@@ -5,12 +5,14 @@ import { Layout } from '../components/Layout';
 import { Post } from '../components/Post';
 import { usePostsQuery } from '../generated/graphql';
 import { createUrqlClient } from '../utils/createUrqlClient';
+
 const Index = () => {
-	//casting type of cursor means that it can be possibly a null type or string type
+	
 	const [ variables, setVariables ] = useState({ limit: 15, cursor: null as null | string });
 	const [ { data, error, fetching } ] = usePostsQuery({
 		variables: variables
 	});
+
 	if (!fetching && !data) {
 		return(
 		<div>

@@ -10,11 +10,13 @@ import { withUrqlClient } from 'next-urql';
 import {createUrqlClient} from '../utils/createUrqlClient'
 
 
-interface registerProps {}
 
-const Register: React.FC<registerProps> = ({}) => {
+
+const Register: React.FC<{}> = () => {
+
 	const [ {}, register ] = useRegisterMutation();
 	const router = useRouter();
+
 	return (
 		<Wrapper variant="small">
 			 <Text mt={4} fontSize="2xl" fontWeight="semibold" lineHeight="short">
@@ -23,16 +25,17 @@ const Register: React.FC<registerProps> = ({}) => {
 			<Formik
 				initialValues={{email:'', username: '', password: '' }}
 				onSubmit={async (values, {setErrors}) => {
+
 					const response = await register({options: values});
+
 					if(response.data?.register.errors){
 						setErrors(toErrorMap(response.data.register.errors))
 					}else if(response.data?.register.user){
 						//worked
 						router.push("/");
 					}
-					console.log(response)
-				}}
-			>
+				}}>
+					
 				{({ isSubmitting }) => (
 					<Form>
 						<Box mt={4}>

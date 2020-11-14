@@ -7,15 +7,19 @@ type InputFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     label: string;
     textarea?: boolean
 }
-
-// !!error
-// '' => false
-// 'err message' => true
-export const InputField: React.FC<InputFieldProps> = ({label,
-    size:_ ,
-    textarea,
-    ...props
-}) => {
+/*
+ !!error
+ '' => false
+ 'err message' => true
+*/
+export const InputField: React.FC<InputFieldProps> = (
+    {
+        label,
+        size:_ ,
+        textarea,
+        ...props
+    }
+) => {
     let InputOrTextarea = Input
     if(textarea){
         InputOrTextarea = Textarea

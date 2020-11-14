@@ -10,9 +10,11 @@ import { useForgotPasswordMutation } from '../generated/graphql';
 
 
 
-const forgotPassword: React.FC<{}> = ({}) => {
+const forgotPassword: React.FC<{}> = () => {
+
     const [{}, forgotPassword] = useForgotPasswordMutation();
-    const [complete, setComplete] = useState(false);
+	const [complete, setComplete] = useState(false);
+	
         return (
             <Wrapper variant="small">
 			<Formik
@@ -23,7 +25,8 @@ const forgotPassword: React.FC<{}> = ({}) => {
 				}}
 			>
 				{({ isSubmitting }) => complete ? 
-                    <Box> if account with that email exists, we sent you an email</Box> : (
+					<Box> if account with that email exists, we sent you an email</Box> 
+					: (
                     <>
                     <Text mt={2} fontSize="2xl" fontWeight="semibold" lineHeight="short">
                                 Forgot Password

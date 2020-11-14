@@ -1,0 +1,3 @@
+
+//casting type of cursor means that it can be possibly a null type or string type
+const y = () => ({}) // returns an object
