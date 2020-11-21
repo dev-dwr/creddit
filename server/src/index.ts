@@ -21,7 +21,7 @@ import { createUpdootLoader } from './utils/createUpdootLoader';
 const main = async () => {
 	const connection = await createConnection({
 		type: 'postgres',
-		database: 'creddit2',
+		database: 'creddit',
 		username: 'postgres',
 		password: 'admin',
 		migrations: [ path.join(__dirname, './migrations/*') ],
@@ -55,7 +55,7 @@ const main = async () => {
 			cookie: {
 				maxAge: 1000 * 60 * 60 * 24 * 365 * 10, //10 years
 				httpOnly: true, //security reason in frontend you cannot access the cookie
-				secure: !__prod__, //cookie will only works in https
+				secure: __prod__, //cookie will only works in https
 				sameSite: 'lax' //protecting csrf
 			},
 			saveUninitialized: false, // it will create session by default even if we do not store any data in it.

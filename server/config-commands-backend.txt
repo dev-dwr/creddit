@@ -44,3 +44,5 @@ if we want to declare data in postgresql and we have capital letter in the name 
 we need to specify it by for example making -> '"createdAt"'(in our code editor) or "createdAt" in mockaroo.com
 
 yarn add dataloader
+
+yarn add dotenv-safe
