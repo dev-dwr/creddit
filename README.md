@@ -8,6 +8,37 @@ Creddit is a simple clone of reddit.
 * PostgreSQL
 * Redis
 
+## Installation
+### Backend
+First of all go to server/ directory and install all dependencies
+```bash
+yarn install
+```
+Then create PostgreSQL database(default name of database is "creddit")
+```bash
+createdb creddit 
+```
+Optional: turning on nodemon tool
+```bash
+yarn watch
+```
+Now you can start using backend on the [localhost](http://localhost:4000/graphql) after starting this command:
+```bash
+yarn dev
+```
+### Frontend
+
+First of all go to web/ directory and install all dependencies
+
+```bash
+yarn install
+```
+Then you can start using frontend on the [localhost](http://localhost:3000) after starting this command:
+```bash
+yarn dev
+```
+
+
 ## Built with
 * React - A JavaScript library for building user interfaces
 * TypeScript - a superset of JavaScript
