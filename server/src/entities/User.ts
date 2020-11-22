@@ -14,9 +14,6 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
   
-  @OneToMany(()=> Post, post => post.author)
-  posts: Post[]
-
   @Field()
   @Column({unique:true})
   username!: string;
@@ -38,5 +35,8 @@ export class User extends BaseEntity {
 
   @OneToMany(()=> Updoot, (updoot) => updoot.user)
   updoots: Updoot[]
+
+  @OneToMany(()=> Post, post => post.author)
+  posts: Post[]
 
 }

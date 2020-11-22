@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useCheckLoginUsersQuery } from "../src/generated/graphql";
+import { useCheckLoginUsersQuery } from "../generated/graphql";
 
 
 export const useIsAuth = () => {
