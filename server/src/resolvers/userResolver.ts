@@ -114,7 +114,7 @@ export class UserResolver {
 			await user.save();
 		} catch (err) {
 			if (err.code === '23505' || err.detail.includes('already exists')) {
-				return throwAnError('username', 'username already taken');
+				return throwAnError('username', 'this username is already taken');
 			}
 		};
 
@@ -142,7 +142,7 @@ export class UserResolver {
 		);
 
 		if (!user) {
-			return throwAnError('usernameOrEmail', 'username is not exists');
+			return throwAnError('usernameOrEmail', 'username does not exist');
 		}
 
 		const validPassword = await argon2.verify(user.password, password);
